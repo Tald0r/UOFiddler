@@ -14,6 +14,9 @@ namespace Ultima
         private static FileIndex _fileIndex3 = new FileIndex("Anim3.idx", "Anim3.mul", 0x20000, -1);
         private static FileIndex _fileIndex4 = new FileIndex("Anim4.idx", "Anim4.mul", 0x20000, -1);
         private static FileIndex _fileIndex5 = new FileIndex("Anim5.idx", "Anim5.mul", 0x20000, -1);
+        
+        // Custom universal 175-slot block anim
+        private static FileIndex _fileIndex6 = new FileIndex("anim_custom.idx", "anim_custom.mul", 0x20000, -1);
 
         private static byte[] _streamBuffer;
 
@@ -27,6 +30,9 @@ namespace Ultima
             _fileIndex3 = new FileIndex("Anim3.idx", "Anim3.mul", 0x20000, -1);
             _fileIndex4 = new FileIndex("Anim4.idx", "Anim4.mul", 0x20000, -1);
             _fileIndex5 = new FileIndex("Anim5.idx", "Anim5.mul", 0x20000, -1);
+            
+            // Custom universal 175-slot block anim
+            _fileIndex6 = new FileIndex("anim_custom.idx", "anim_custom.mul", 0x20000, -1);
 
             BodyConverter.Initialize();
             BodyTable.Initialize();
@@ -313,6 +319,13 @@ namespace Ultima
                     return 400 + ((int)(_fileIndex4.IdxLength - (35000 * 12)) / (12 * 175));
                 case 5:
                     return 400 + ((int)(_fileIndex5.IdxLength - (35000 * 12)) / (12 * 175));
+                case 6:
+                    if (_fileIndex6 != null && _fileIndex6.IdxLength > 0)
+                    {
+                        // Calculate total bodies based on the universal block size.
+                        return (int)(_fileIndex6.IdxLength / (175 * 12));
+                    }
+                    return 0;
             }
         }
 
@@ -384,6 +397,34 @@ namespace Ultima
                         length = 35;
                     }
 
+                    break;
+                case 6:
+                    GetFileIndex(body, 0, 0, fileType, out FileIndex fileIndex, out int index);
+
+                    if (!fileIndex.Valid(index, out length, out int extra, out _))
+                    {
+                        length = 0;
+                    }
+
+                    if (length < 0)
+                    {
+                        length = 0;
+                    }
+
+                    // The 'extra' field now dictates the animation type.
+                    // 0=H, 1=L, 2=P.
+                    if (extra == 0)
+                    {
+                        length = 22; // High Detail (Monster)}
+                    }
+                    else if (extra == 1)
+                    {
+                        length = 13; // Low Detail (Animal)
+                    }
+                    else
+                    {
+                        length = 35; // People/Equipment
+                    }
                     break;
             }
             return length;
@@ -478,6 +519,12 @@ namespace Ultima
                         index = 35000 + ((body - 400) * 175);
                     }
 
+                    break;
+                // NEW universal custom: anim_custom
+                case 6:
+                    fileIndex = _fileIndex6;
+                    index = body * 175; // universal block
+                    
                     break;
             }
 

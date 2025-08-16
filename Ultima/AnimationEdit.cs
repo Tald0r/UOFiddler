@@ -12,12 +12,17 @@ namespace Ultima
         private static FileIndex _fileIndex3 = new FileIndex("Anim3.idx", "Anim3.mul", -1);
         private static FileIndex _fileIndex4 = new FileIndex("Anim4.idx", "Anim4.mul", -1);
         private static FileIndex _fileIndex5 = new FileIndex("Anim5.idx", "Anim5.mul", -1);
+        
+        // Custom universal 175-slot block anim
+        private static FileIndex _fileIndex6 = new FileIndex("anim_custom.idx", "anim_custom.mul", -1);
 
         private static AnimIdx[] _animCache;
         private static AnimIdx[] _animCache2;
         private static AnimIdx[] _animCache3;
         private static AnimIdx[] _animCache4;
         private static AnimIdx[] _animCache5;
+        // Ne cache for case 6: custom universal 175-slot block anim
+        private static AnimIdx[] _animCache6;
 
         static AnimationEdit()
         {
@@ -50,6 +55,12 @@ namespace Ultima
             {
                 _animCache5 = new AnimIdx[_fileIndex5.IdxLength / 12];
             }
+
+            // Init cache for custom anim
+            if (_fileIndex6 != null && _fileIndex6.IdxLength > 0)
+            {
+                _animCache6 = new AnimIdx[_fileIndex6.IdxLength / 12];
+            }
         }
 
         /// <summary>
@@ -62,6 +73,8 @@ namespace Ultima
             _fileIndex3 = new FileIndex("Anim3.idx", "Anim3.mul", -1);
             _fileIndex4 = new FileIndex("Anim4.idx", "Anim4.mul", -1);
             _fileIndex5 = new FileIndex("Anim5.idx", "Anim5.mul", -1);
+            
+            _fileIndex6 = new FileIndex("anim_custom.idx", "anim_custom.mul", -1);
 
             InitializeCache();
         }
@@ -148,6 +161,12 @@ namespace Ultima
                     }
 
                     break;
+                // NEW universal custom: anim_custom
+                case 6:
+                    fileIndex = _fileIndex6;
+                    index = body * 175; // universal block
+                    
+                    break;
             }
 
             index += action * 5;
@@ -176,6 +195,8 @@ namespace Ultima
                     return _animCache4;
                 case 5:
                     return _animCache5;
+                case 6:
+                    return _animCache6;
                 default:
                     return _animCache;
             }
@@ -184,7 +205,7 @@ namespace Ultima
         public static AnimIdx GetAnimation(int fileType, int body, int action, int dir)
         {
             AnimIdx[] cache = GetCache(fileType);
-
+            
             GetFileIndex(body, fileType, action, dir, out FileIndex fileIndex, out int index);
 
             if (cache?[index] != null)
@@ -193,7 +214,7 @@ namespace Ultima
             }
 
             return cache[index] = new AnimIdx(index, fileIndex);
-        }
+        }        
 
         public static bool IsActionDefined(int fileType, int body, int action)
         {
@@ -215,13 +236,48 @@ namespace Ultima
             bool valid = fileIndex.Valid(index, out int length, out int _, out bool _);
 
             return valid && length >= 1;
-        }
+        }    
 
-        public static void LoadFromVD(int fileType, int body, BinaryReader bin)
+        public static void SetBodyType(int fileType, int body, int bodyType)
+        {
+            AnimIdx[] cache = GetCache(fileType);
+            GetFileIndex(body, fileType, 0, 0, out FileIndex fileIndex, out int startIndex);
+
+            int totalSlots = 35 * 5; // universal block
+            for (int i = 0; i < totalSlots; i++)
+            {
+                int idx = startIndex + i;
+
+                // Materialize a minimal AnimIdx if missing so Save() will persist Extra
+                if (cache[idx] == null)
+                {
+                    cache[idx] = AnimIdx.CreateEmpty();
+                }
+
+                cache[idx].BodyType = bodyType;
+            }
+        }
+        
+        public static void LoadFromVD(int fileType, int body, BinaryReader bin, int animType)
         {
             AnimIdx[] cache = GetCache(fileType);
             GetFileIndex(body, fileType, 0, 0, out FileIndex _, out int index);
-            int animLength = Animations.GetAnimLength(body, fileType) * 5;
+            
+            // Calculate the correct animLength based on the TYPE FROM THE *.VD FILE, not the destination slot.
+            int animLength;
+            switch (animType)
+            {
+                case 0: // High Detail Monster
+                    animLength = 22 * 5;
+                    break;
+                case 1: // Low Detail Animal
+                    animLength = 13 * 5;
+                    break;
+                default: // People/Equipment
+                    animLength = 35 * 5;
+                    break;
+            }
+
             var entries = new Entry3D[animLength];
 
             for (int i = 0; i < animLength; ++i)
@@ -237,6 +293,10 @@ namespace Ultima
                 {
                     bin.BaseStream.Seek(entry.Lookup, SeekOrigin.Begin);
                     cache[index] = new AnimIdx(bin, entry.Extra);
+                    if (fileType == 6)
+                    {
+                        cache[index].BodyType = animType; // Set the type!
+                    }
                 }
                 ++index;
             }
@@ -246,26 +306,34 @@ namespace Ultima
         {
             AnimIdx[] cache = GetCache(fileType);
             GetFileIndex(body, fileType, 0, 0, out FileIndex fileIndex, out int index);
+
             using (var fs = new FileStream(file, FileMode.Create, FileAccess.Write, FileShare.Write))
             using (var bin = new BinaryWriter(fs))
             {
                 bin.Write((short)6);
+
                 int animLength = Animations.GetAnimLength(body, fileType);
                 int currType = animLength == 22 ? 0 : animLength == 13 ? 1 : 2;
+
+                // Optional: prefer cached BodyType for the universal custom file (type 6)
+                // Ensures VD header reflects actual cached BodyType, even if GetAnimLength
+                // didn't infer it yet for a newly created empty slot that just got BodyType set.
+                AnimIdx animProbe = cache[index] ?? (cache[index] = new AnimIdx(index, fileIndex));
+                if (fileType == 6 && animProbe != null)
+                    currType = animProbe.BodyType;
+
                 bin.Write((short)currType);
+
                 long indexPos = bin.BaseStream.Position;
                 long animPos = bin.BaseStream.Position + (12 * animLength * 5);
+
                 for (int i = index; i < index + (animLength * 5); i++)
                 {
                     AnimIdx anim;
                     if (cache != null)
-                    {
                         anim = cache[i] != null ? cache[i] : cache[i] = new AnimIdx(i, fileIndex);
-                    }
                     else
-                    {
                         anim = cache[i] = new AnimIdx(i, fileIndex);
-                    }
 
                     if (anim == null)
                     {
@@ -316,6 +384,11 @@ namespace Ultima
                     cache = _animCache5;
                     fileIndex = _fileIndex5;
                     break;
+                case 6:
+                    filename = "anim_custom";
+                    cache = _animCache6;
+                    fileIndex = _fileIndex6;
+                    break;
             }
 
             string idx = Path.Combine(path, filename + ".idx");
@@ -326,6 +399,7 @@ namespace Ultima
             using (var binidx = new BinaryWriter(fsidx))
             using (var binmul = new BinaryWriter(fsmul))
             {
+                AnimIdx.fileType = fileType;
                 for (int idxc = 0; idxc < cache.Length; ++idxc)
                 {
                     AnimIdx anim;
@@ -355,6 +429,9 @@ namespace Ultima
 
     public sealed class AnimIdx
     {
+        public int BodyType { get; set; }
+        public static int fileType { get; set; }
+        
         public readonly int PaletteCapacity = 0x100;
 
         private readonly int _idxExtra;
@@ -373,6 +450,7 @@ namespace Ultima
             }
 
             _idxExtra = extra;
+            this.BodyType = _idxExtra; // This is for anim_custom
 
             using (var bin = new BinaryReader(stream))
             {
@@ -430,6 +508,25 @@ namespace Ultima
                 bin.BaseStream.Seek(lookups[i], SeekOrigin.Begin);
                 Frames.Add(new FrameEdit(bin));
             }
+        }
+
+        public static AnimIdx CreateEmpty()
+        {
+            var ai = new AnimIdx(true);
+            ai.Palette = new ushort[ai.PaletteCapacity];
+            // Fill palette with transparent (0x8000)
+            for (int i = 0; i < ai.PaletteCapacity; i++)
+                ai.Palette[i] = 0x8000;
+                
+            ai.Frames = new List<FrameEdit>(); // no frames
+            ai.BodyType = 2; // default P; caller will override
+            return ai;
+        }
+        
+        // Private ctor used only by CreateEmpty()
+        private AnimIdx(bool _)
+        {
+            // intentionally empty; fields are assigned by the factory
         }
 
         public unsafe Bitmap[] GetFrames()
@@ -617,7 +714,15 @@ namespace Ultima
 
             start = bin.BaseStream.Position - start;
             idx.Write((int)start);
-            idx.Write(_idxExtra);
+            if (fileType == 6)
+            {
+                // Write our stored BodyType property into the 'extra' field on disk.
+                idx.Write(this.BodyType);
+            }
+            else
+            {
+                idx.Write(_idxExtra);
+            }
         }
 
         public void ExportToVD(BinaryWriter bin, ref long indexpos, ref long animpos)
