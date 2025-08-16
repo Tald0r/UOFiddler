@@ -44,6 +44,10 @@
             fromvdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             exportToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             tovdToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            convertToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            lLowAnimalsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            hHighMonstersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            pEquipmentPeoplesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             AnimationFileToolStrip = new System.Windows.Forms.ToolStrip();
             SelectFileToolStripComboBox = new System.Windows.Forms.ToolStripComboBox();
             tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -222,21 +226,22 @@
             // ContextMenuStripTreeView
             // 
             ContextMenuStripTreeView.ImageScalingSize = new System.Drawing.Size(20, 20);
-            ContextMenuStripTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { addToolStripMenuItem, removeToolStripMenuItem, extractImagesToolStripMenuItem1, importToolStripMenuItem1, exportToolStripMenuItem1 });
+            ContextMenuStripTreeView.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { addToolStripMenuItem, removeToolStripMenuItem, extractImagesToolStripMenuItem1, importToolStripMenuItem1, exportToolStripMenuItem1, convertToolStripMenuItem1 });
             ContextMenuStripTreeView.Name = "contextMenuStrip2";
-            ContextMenuStripTreeView.Size = new System.Drawing.Size(158, 114);
+            ContextMenuStripTreeView.Size = new System.Drawing.Size(181, 158);
+            ContextMenuStripTreeView.Opening += ContextMenuStripTreeView_Opening;
             // 
             // addToolStripMenuItem
             // 
             addToolStripMenuItem.Name = "addToolStripMenuItem";
-            addToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            addToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             addToolStripMenuItem.Text = "Replace";
             addToolStripMenuItem.Visible = false;
             // 
             // removeToolStripMenuItem
             // 
             removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            removeToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            removeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             removeToolStripMenuItem.Text = "Remove";
             removeToolStripMenuItem.Click += OnClickRemoveAction;
             // 
@@ -244,7 +249,7 @@
             // 
             extractImagesToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { asBmpToolStripMenuItem, asTiffToolStripMenuItem, asJpgToolStripMenuItem, asPngToolStripMenuItem });
             extractImagesToolStripMenuItem1.Name = "extractImagesToolStripMenuItem1";
-            extractImagesToolStripMenuItem1.Size = new System.Drawing.Size(157, 22);
+            extractImagesToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             extractImagesToolStripMenuItem1.Text = "Extract Images..";
             // 
             // asBmpToolStripMenuItem
@@ -283,7 +288,7 @@
             // 
             importToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { fromvdToolStripMenuItem });
             importToolStripMenuItem1.Name = "importToolStripMenuItem1";
-            importToolStripMenuItem1.Size = new System.Drawing.Size(157, 22);
+            importToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             importToolStripMenuItem1.Text = "Import..";
             // 
             // fromvdToolStripMenuItem
@@ -297,15 +302,46 @@
             // 
             exportToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { tovdToolStripMenuItem });
             exportToolStripMenuItem1.Name = "exportToolStripMenuItem1";
-            exportToolStripMenuItem1.Size = new System.Drawing.Size(157, 22);
+            exportToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
             exportToolStripMenuItem1.Text = "Export..";
             // 
             // tovdToolStripMenuItem
             // 
             tovdToolStripMenuItem.Name = "tovdToolStripMenuItem";
-            tovdToolStripMenuItem.Size = new System.Drawing.Size(105, 22);
+            tovdToolStripMenuItem.Size = new System.Drawing.Size(106, 22);
             tovdToolStripMenuItem.Text = "To .vd";
             tovdToolStripMenuItem.Click += OnClickExportToVD;
+            // 
+            // convertToolStripMenuItem1
+            // 
+            convertToolStripMenuItem1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { lLowAnimalsToolStripMenuItem, hHighMonstersToolStripMenuItem, pEquipmentPeoplesToolStripMenuItem });
+            convertToolStripMenuItem1.Name = "convertToolStripMenuItem1";
+            convertToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            convertToolStripMenuItem1.Text = "Convert..";
+            // 
+            // lLowAnimalsToolStripMenuItem
+            // 
+            lLowAnimalsToolStripMenuItem.Name = "lLowAnimalsToolStripMenuItem";
+            lLowAnimalsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            lLowAnimalsToolStripMenuItem.Tag = "convertLow";
+            lLowAnimalsToolStripMenuItem.Text = "L : Low (Animals)";
+            lLowAnimalsToolStripMenuItem.Click += OnClickConvertType;
+            // 
+            // hHighMonstersToolStripMenuItem
+            // 
+            hHighMonstersToolStripMenuItem.Name = "hHighMonstersToolStripMenuItem";
+            hHighMonstersToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            hHighMonstersToolStripMenuItem.Tag = "convertHigh";
+            hHighMonstersToolStripMenuItem.Text = "H : High (Monsters)";
+            hHighMonstersToolStripMenuItem.Click += OnClickConvertType;
+            // 
+            // pEquipmentPeoplesToolStripMenuItem
+            // 
+            pEquipmentPeoplesToolStripMenuItem.Name = "pEquipmentPeoplesToolStripMenuItem";
+            pEquipmentPeoplesToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
+            pEquipmentPeoplesToolStripMenuItem.Tag = "convertEquipment";
+            pEquipmentPeoplesToolStripMenuItem.Text = "P : Equipment (Peoples)";
+            pEquipmentPeoplesToolStripMenuItem.Click += OnClickConvertType;
             // 
             // AnimationFileToolStrip
             // 
@@ -320,7 +356,7 @@
             // 
             // SelectFileToolStripComboBox
             // 
-            SelectFileToolStripComboBox.Items.AddRange(new object[] { "Choose anim file", "anim", "anim2", "anim3", "anim4", "anim5" });
+            SelectFileToolStripComboBox.Items.AddRange(new object[] { "Choose anim file", "anim", "anim2", "anim3", "anim4", "anim5", "anim_custom" });
             SelectFileToolStripComboBox.Name = "SelectFileToolStripComboBox";
             SelectFileToolStripComboBox.Size = new System.Drawing.Size(140, 25);
             SelectFileToolStripComboBox.SelectedIndexChanged += OnAnimChanged;
@@ -1561,5 +1597,9 @@
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
+        private System.Windows.Forms.ToolStripMenuItem convertToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem lLowAnimalsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hHighMonstersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pEquipmentPeoplesToolStripMenuItem;
     }
 }

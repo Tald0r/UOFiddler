@@ -61,23 +61,7 @@ namespace UoFiddler.Controls.Forms
 
         private readonly string[][] _animNames =
         {
-            new string[]
-            {
-                "Walk",
-                "Run",
-                "Idle",
-                "Eat",
-                "Alert",
-                "Attack1",
-                "Attack2",
-                "GetHit",
-                "Die1",
-                "Idle",
-                "Fidget",
-                "LieDown",
-                "Die2"
-            }, //animal
-            new string[]
+            new string[] // Index 0: High Detail (Monster)
             {
                 "Walk",
                 "Idle",
@@ -101,8 +85,24 @@ namespace UoFiddler.Controls.Forms
                 "Fly",
                 "TakeOff",
                 "GetHitInAir"
-            }, //Monster
-            new string[]
+            },
+            new string[] // Index 1: Low Detail (Animal)
+            {
+                "Walk",
+                "Run",
+                "Idle",
+                "Eat",
+                "Alert",
+                "Attack1",
+                "Attack2",
+                "GetHit",
+                "Die1",
+                "Idle",
+                "Fidget",
+                "LieDown",
+                "Die2"
+            },
+            new string[] // Index 2: People/Equipment
             {
                 "Walk_01",
                 "WalkStaff_01",
@@ -139,13 +139,13 @@ namespace UoFiddler.Controls.Forms
                 "Bow_Lesser_01",
                 "Salute_Armed1h_01",
                 "Ingest_Eat_01"
-            } //human
+            }
         };
 
         private void OnLoad(object sender, EventArgs e)
         {
             Options.LoadedUltimaClass["AnimationEdit"] = true;
-
+            
             AnimationListTreeView.BeginUpdate();
             try
             {
@@ -156,46 +156,118 @@ namespace UoFiddler.Controls.Forms
                     TreeNode[] nodes = new TreeNode[count];
                     for (int i = 0; i < count; ++i)
                     {
-                        int animLength = Animations.GetAnimLength(i, _fileType);
-                        string type = animLength == 22 ? "H" : animLength == 13 ? "L" : "P";
-                        TreeNode node = new TreeNode
-                        {
-                            Tag = i,
-                            Text = $"{type}: {i} ({BodyConverter.GetTrueBody(_fileType, i)})"
-                        };
+                        int animLength;
+                        string type;
+                        int namesIndex;
 
-                        bool valid = false;
-                        for (int j = 0; j < animLength; ++j)
+                        if (_fileType == 6)
                         {
-                            TreeNode treeNode = new TreeNode
+                            // Universal 175 mode: read BodyType from cache/idx extra if present, else default to People(2)
+                            AnimIdx currentAnim = AnimationEdit.GetAnimation(_fileType, i, 0, 0);
+                            int bodyType = (currentAnim != null && currentAnim.Frames != null) ? currentAnim.BodyType : 2;
+
+                            switch (bodyType)
                             {
-                                Tag = j,
-                                Text = string.Format("{0:D2} {1}", j, _animNames[animLength == 22 ? 1 : animLength == 13 ? 0 : 2][j])
+                                case 0: // High (Monsters)
+                                    animLength = 22;
+                                    type = "H";
+                                    namesIndex = 0; // _animNames should be "High (Monster)" set[0]
+                                    break;
+                                case 1: // Low (Animals)
+                                    animLength = 13;
+                                    type = "L";
+                                    namesIndex = 1; // _animNames should be "Low (Animal)" set[1]
+                                    break;
+                                default: // People/Equipment
+                                    animLength = 35;
+                                    type = "P";
+                                    namesIndex = 2; // _animNames should be "People/Equipment" set[2]
+                                    break;
+                            }
+
+                            TreeNode node = new TreeNode
+                            {
+                                Tag = i,
+                                Text = $"{type}: {i} ({BodyConverter.GetTrueBody(_fileType, i)})"
                             };
 
-                            if (AnimationEdit.IsActionDefined(_fileType, i, j))
+                            bool valid = false;
+                            for (int j = 0; j < animLength; ++j)
                             {
-                                valid = true;
-                            }
-                            else
-                            {
-                                treeNode.ForeColor = Color.Red;
+                                TreeNode treeNode = new TreeNode
+                                {
+                                    Tag = j,
+                                    Text = string.Format("{0:D2} {1}", j, _animNames[namesIndex][j])
+                                };
+
+                                if (AnimationEdit.IsActionDefined(_fileType, i, j))
+                                {
+                                    valid = true;
+                                }
+                                else
+                                {
+                                    treeNode.ForeColor = Color.Red;
+                                }
+
+                                node.Nodes.Add(treeNode);
                             }
 
-                            node.Nodes.Add(treeNode);
+                            if (!valid)
+                            {
+                                if (_showOnlyValid)
+                                {
+                                    continue;
+                                }
+                                node.ForeColor = Color.Red;
+                            }
+
+                            nodes[i] = node;
                         }
-
-                        if (!valid)
+                        else
                         {
-                            if (_showOnlyValid)
+                            // ORIGINAL LOGIC for legacy file types (1..5)
+                            animLength = Animations.GetAnimLength(i, _fileType);
+                            type = animLength == 22 ? "H" : animLength == 13 ? "L" : "P";
+
+                            TreeNode node = new TreeNode
                             {
-                                continue;
+                                Tag = i,
+                                Text = $"{type}: {i} ({BodyConverter.GetTrueBody(_fileType, i)})"
+                            };
+
+                            bool valid = false;
+                            for (int j = 0; j < animLength; ++j)
+                            {
+                                namesIndex = animLength == 22 ? 0 : animLength == 13 ? 1 : 2;
+                                TreeNode treeNode = new TreeNode
+                                {
+                                    Tag = j,
+                                    Text = string.Format("{0:D2} {1}", j, _animNames[namesIndex][j])
+                                };
+
+                                if (AnimationEdit.IsActionDefined(_fileType, i, j))
+                                {
+                                    valid = true;
+                                }
+                                else
+                                {
+                                    treeNode.ForeColor = Color.Red;
+                                }
+
+                                node.Nodes.Add(treeNode);
                             }
 
-                            node.ForeColor = Color.Red;
-                        }
+                            if (!valid)
+                            {
+                                if (_showOnlyValid)
+                                {
+                                    continue;
+                                }
+                                node.ForeColor = Color.Red;
+                            }
 
-                        nodes[i] = node;
+                            nodes[i] = node;
+                        }
                     }
 
                     AnimationListTreeView.Nodes.AddRange(nodes.Where(n => n != null).ToArray());
@@ -217,6 +289,7 @@ namespace UoFiddler.Controls.Forms
             }
 
             _loaded = true;
+
         }
 
         private void OnFilePathChangeEvent()
@@ -244,6 +317,65 @@ namespace UoFiddler.Controls.Forms
                 : AnimationListTreeView.Nodes[tag];
         }
 
+        
+        private void RefreshNode(int bodyId, int newBodyType)
+        {
+            TreeNode node = GetNode(bodyId);
+            if (node == null)
+            {
+                return; // Safety check
+            }
+
+            // 1. Determine the correct UI properties based on the new type.
+            string typePrefix;
+            int animLength;
+            switch (newBodyType)
+            {
+                case 0: // High
+                    typePrefix = "H";
+                    animLength = 22;
+                    break;
+                case 1: // Low
+                    typePrefix = "L";
+                    animLength = 13;
+                    break;
+                default: // People
+                    typePrefix = "P";
+                    animLength = 35;
+                    break;
+            }
+
+            // 2. Update the main node's text (e.g., "P: 1" becomes "H: 1").
+            node.Text = $"{typePrefix}: {bodyId} ({BodyConverter.GetTrueBody(_fileType, bodyId)})";
+
+            // 3. Clear the old child nodes (the 35 "People" actions).
+            node.Nodes.Clear();
+
+            // 4. Rebuild the child nodes with the correct new actions.
+            bool valid = false;
+            for (int j = 0; j < animLength; ++j)
+            {
+                TreeNode newActionNode = new TreeNode
+                {
+                    Tag = j,
+                    Text = string.Format("{0:D2} {1}", j, _animNames[newBodyType][j])
+                };
+
+                if (AnimationEdit.IsActionDefined(_fileType, bodyId, j))
+                {
+                    valid = true;
+                }
+                else
+                {
+                    newActionNode.ForeColor = Color.Red;
+                }
+                node.Nodes.Add(newActionNode);
+            }
+
+            // 5. Update the main node's color to show if it has any valid frames.
+            node.ForeColor = valid ? Color.Black : Color.Red;
+        }
+        
         private unsafe void SetPaletteBox()
         {
             if (_fileType == 0)
@@ -375,7 +507,7 @@ namespace UoFiddler.Controls.Forms
             Bitmap bmp = currentBits[(int)e.Item.Tag];
             var penColor = FramesListView.SelectedItems.Contains(e.Item) ? Color.Red : Color.Gray;
             e.Graphics.DrawRectangle(new Pen(penColor), e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height);
-            e.Graphics.DrawImage(bmp, e.Bounds.X, e.Bounds.Y, bmp.Width,  bmp.Height);
+            e.Graphics.DrawImage(bmp, e.Bounds.X, e.Bounds.Y, bmp.Width, bmp.Height);
             e.DrawText(TextFormatFlags.Bottom | TextFormatFlags.HorizontalCenter);
         }
 
@@ -967,8 +1099,8 @@ namespace UoFiddler.Controls.Forms
             {
                 bitBmp[index] = new Bitmap(bmp.Width, bmp.Height, PixelFormat.Format16bppArgb1555);
                 bmp.SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnim(bitBmp[index], (int) numericUpDownRed.Value,
-                    (int) numericUpDownGreen.Value, (int) numericUpDownBlue.Value);
+                bitBmp[index] = ConvertBmpAnim(bitBmp[index], (int)numericUpDownRed.Value,
+                    (int)numericUpDownGreen.Value, (int)numericUpDownBlue.Value);
                 edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
@@ -1102,6 +1234,8 @@ namespace UoFiddler.Controls.Forms
             }
         }
 
+        // The exact replacement for OnClickImportFromVD (AnimationEditForm_NEW.cs)
+        // Replace the entire method with:
         private void OnClickImportFromVD(object sender, EventArgs e)
         {
             if (_fileType == 0)
@@ -1112,7 +1246,7 @@ namespace UoFiddler.Controls.Forms
             using (OpenFileDialog dialog = new OpenFileDialog())
             {
                 dialog.Multiselect = false;
-                dialog.Title = "Choose palette file";
+                dialog.Title = "Choose VD file to import";
                 dialog.CheckFileExists = true;
                 dialog.Filter = "vd files (*.vd)|*.vd";
                 if (dialog.ShowDialog() != DialogResult.OK)
@@ -1120,66 +1254,73 @@ namespace UoFiddler.Controls.Forms
                     return;
                 }
 
-                int animLength = Animations.GetAnimLength(_currentBody, _fileType);
-                int currentType;
-                if (animLength == 22)
-                {
-                    currentType = 0;
-                }
-                else
-                {
-                    currentType = animLength == 13 ? 1 : 2;
-                }
-
                 using (FileStream fs = new FileStream(dialog.FileName, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     using (BinaryReader bin = new BinaryReader(fs))
                     {
-                        int fileType = bin.ReadInt16();
-                        int animType = bin.ReadInt16();
-                        if (fileType != 6)
+                        int fileVersion = bin.ReadInt16();
+                        int animTypeFromFile = bin.ReadInt16(); // 0=H,1=L,2=P
+                        if (fileVersion != 6)
                         {
-                            MessageBox.Show("Not an Anim File.", "Import", MessageBoxButtons.OK,
+                            MessageBox.Show("Not a valid VD Anim File.", "Import Error", MessageBoxButtons.OK,
                                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                             return;
                         }
 
-                        if (animType != currentType)
+                        if (_fileType == 6)
                         {
-                            MessageBox.Show("Wrong Anim Id ( Type )", "Import", MessageBoxButtons.OK,
+                            // Universal: accept the file’s type and persist it via AnimationEdit.LoadFromVD
+                            AnimationEdit.LoadFromVD(_fileType, _currentBody, bin, animTypeFromFile);
+                            Options.ChangedUltimaClass["Animations"] = true;
+                            RefreshNode(_currentBody, animTypeFromFile);
+                            AfterSelectTreeView(this, null);
+                            MessageBox.Show("Finished importing from VD.", "Import Complete", MessageBoxButtons.OK,
                                 MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
-                            return;
-                        }
-                        AnimationEdit.LoadFromVD(_fileType, _currentBody, bin);
-                    }
-                }
-
-                bool valid = false;
-                TreeNode node = GetNode(_currentBody);
-                if (node != null)
-                {
-                    for (int j = 0; j < animLength; ++j)
-                    {
-                        if (AnimationEdit.IsActionDefined(_fileType, _currentBody, j))
-                        {
-                            node.Nodes[j].ForeColor = Color.Black;
-                            valid = true;
                         }
                         else
                         {
-                            node.Nodes[j].ForeColor = Color.Red;
+                            // Legacy anim1..5: enforce slot’s current type
+                            int animLength = Animations.GetAnimLength(_currentBody, _fileType);
+                            int currentType = (animLength == 22) ? 0 : (animLength == 13 ? 1 : 2);
+                            if (animTypeFromFile != currentType)
+                            {
+                                MessageBox.Show("Wrong Anim Id ( Type )", "Import", MessageBoxButtons.OK,
+                                    MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                                return;
+                            }
+
+                            AnimationEdit.LoadFromVD(_fileType, _currentBody, bin, animTypeFromFile);
+
+                            bool valid = false;
+                            TreeNode node = GetNode(_currentBody);
+                            if (node != null)
+                            {
+                                for (int j = 0; j < animLength; ++j)
+                                {
+                                    if (AnimationEdit.IsActionDefined(_fileType, _currentBody, j))
+                                    {
+                                        node.Nodes[j].ForeColor = Color.Black;
+                                        valid = true;
+                                    }
+                                    else
+                                    {
+                                        node.Nodes[j].ForeColor = Color.Red;
+                                    }
+                                }
+                                node.ForeColor = valid ? Color.Black : Color.Red;
+                            }
+
+                            Options.ChangedUltimaClass["Animations"] = true;
+                            AfterSelectTreeView(this, null);
+                            
+                            MessageBox.Show("Finished importing from VD.", "Import Complete", MessageBoxButtons.OK,
+                                MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
                         }
                     }
-                    node.ForeColor = valid ? Color.Black : Color.Red;
                 }
-
-                Options.ChangedUltimaClass["Animations"] = true;
-                AfterSelectTreeView(this, null);
-
-                MessageBox.Show("Finished", "Import", MessageBoxButtons.OK, MessageBoxIcon.Information,
-                    MessageBoxDefaultButton.Button1);
             }
         }
+
 
         private void OnClickExportToVD(object sender, EventArgs e)
         {
@@ -2049,9 +2190,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = 0; index < frameCount; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnim(bitBmp[index], (int) numericUpDownRed.Value,
-                    (int) numericUpDownGreen.Value, (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnim(bitBmp[index], (int)numericUpDownRed.Value,
+                    (int)numericUpDownGreen.Value, (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -2429,9 +2570,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = frameCount / 8 * 4; index < frameCount / 8 * 5; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -2479,9 +2620,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = 0; index < frameCount / 8; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -2529,9 +2670,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = frameCount / 8 * 5; index < frameCount / 8 * 6; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -2579,9 +2720,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = frameCount / 8 * 1; index < frameCount / 8 * 2; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -2629,9 +2770,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = frameCount / 8 * 6; index < frameCount / 8 * 7; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimCv5(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -3165,9 +3306,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = frameCount / 5 * 0; index < frameCount / 5 * 1; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -3215,9 +3356,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = frameCount / 5 * 1; index < frameCount / 5 * 2; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -3265,9 +3406,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = frameCount / 5 * 2; index < frameCount / 5 * 3; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -3315,9 +3456,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = frameCount / 5 * 3; index < frameCount / 5 * 4; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -3365,9 +3506,9 @@ namespace UoFiddler.Controls.Forms
             for (int index = frameCount / 5 * 4; index < frameCount / 5 * 5; index++)
             {
                 bitBmp[index].SelectActiveFrame(dimension, index);
-                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int) numericUpDownRed.Value, (int) numericUpDownGreen.Value,
-                    (int) numericUpDownBlue.Value);
-                edit.AddFrame(bitBmp[index], bitBmp[index].Width/2);
+                bitBmp[index] = ConvertBmpAnimKr(bitBmp[index], (int)numericUpDownRed.Value, (int)numericUpDownGreen.Value,
+                    (int)numericUpDownBlue.Value);
+                edit.AddFrame(bitBmp[index], bitBmp[index].Width / 2);
                 TreeNode node = GetNode(_currentBody);
                 if (node != null)
                 {
@@ -3892,7 +4033,7 @@ namespace UoFiddler.Controls.Forms
             for (int x = 0; x < 5; x++)
             {
                 AnimIdx edit = AnimationEdit.GetAnimation(_fileType, _currentBody, _currentAction, _currentDir);
-                PaletteReducer((int) numericUpDown6.Value, (int) numericUpDown7.Value, (int) numericUpDown8.Value, edit);
+                PaletteReducer((int)numericUpDown6.Value, (int)numericUpDown7.Value, (int)numericUpDown8.Value, edit);
                 SetPaletteBox();
                 FramesListView.Invalidate();
                 Options.ChangedUltimaClass["Animations"] = true;
@@ -4177,6 +4318,103 @@ namespace UoFiddler.Controls.Forms
                     animIdx.Palette[i] = 0x8000;
                 }
             }
+        }
+        
+        private bool IsBodyEmpty(int fileType, int bodyId)
+        {
+            // An empty body means no actions are defined in any direction
+            for (int a = 0; a < 35; a++)
+            {
+                if (AnimationEdit.IsActionDefined(fileType, bodyId, a))
+                    return false;
+            }
+            return true;
+        }
+
+
+        private void OnClickConvertType(object sender, EventArgs e)
+        {
+            if (_fileType == 0)
+                return;
+
+            // Ensure there is a selected top-level node (body)
+            if (AnimationListTreeView.SelectedNode == null || AnimationListTreeView.SelectedNode.Parent != null)
+            {
+                MessageBox.Show("Please select a body (top-level) node to convert.", "Convert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            int bodyId = (int)AnimationListTreeView.SelectedNode.Tag;
+
+            // Only allow conversion when the body has no frames
+            if (!IsBodyEmpty(_fileType, bodyId))
+            {
+                MessageBox.Show("Conversion is allowed only on empty entries.", "Convert", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Determine requested target type from the menu item's Tag
+            if (sender is not ToolStripMenuItem mi || mi.Tag is not string tag)
+                return;
+
+            int newBodyType = 2; // default P
+            switch (tag)
+            {
+                case "convertLow":         // L : Low (Animals)
+                    newBodyType = 1;
+                    break;
+                case "convertHigh":        // H : High (Monsters)
+                    newBodyType = 0;
+                    break;
+                case "convertEquipment":   // P : Equipment (Peoples)
+                    newBodyType = 2;
+                    break;
+                default:
+                    return;
+            }
+
+            // Persist BodyType to cache/idx Extra without creating frames
+            AnimationEdit.SetBodyType(_fileType, bodyId, newBodyType);
+
+            // Mark modified
+            Options.ChangedUltimaClass["Animations"] = true;
+
+            // Fast, surgical UI update of only this node
+            RefreshNode(bodyId, newBodyType);
+
+            // If this body is currently “active”, refresh the right panel
+            if (AnimationListTreeView.SelectedNode != null &&
+                AnimationListTreeView.SelectedNode.Parent == null &&
+                (int)AnimationListTreeView.SelectedNode.Tag == bodyId)
+            {
+                AfterSelectTreeView(this, null);
+            }
+        }
+
+        private void ContextMenuStripTreeView_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (_fileType != 6)
+            {
+                convertToolStripMenuItem1.Visible = false;
+                return;
+            }
+            convertToolStripMenuItem1.Visible = true;
+            
+            // Default to disabled; we'll enable only for empty top-level nodes
+            bool enableConvert = false;
+
+            TreeNode node = AnimationListTreeView.SelectedNode;
+            if (node != null && node.Parent == null) // body-level node
+            {
+                int bodyId = (int)node.Tag;
+                enableConvert = IsBodyEmpty(_fileType, bodyId);
+            }
+
+            // Toggle Convert.. and its items
+            convertToolStripMenuItem1.Enabled = enableConvert;
+            lLowAnimalsToolStripMenuItem.Enabled = enableConvert;
+            hHighMonstersToolStripMenuItem.Enabled = enableConvert;
+            pEquipmentPeoplesToolStripMenuItem.Enabled = enableConvert;
         }
     }
 }
