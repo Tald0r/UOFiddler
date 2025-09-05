@@ -124,10 +124,10 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 fontBrush = Brushes.Red;
             }
 
-            e.Graphics.DrawString($"0x{i:X}", Font, fontBrush,
+            e.Graphics.DrawString($"{i:D} (0x{i:X})", Font, fontBrush,
                 new PointF(85,
                 e.Bounds.Y + ((e.Bounds.Height / 2) -
-                (e.Graphics.MeasureString($"0x{i:X}", Font).Height / 2))));
+                (e.Graphics.MeasureString($"{i:D} (0x{i:X})", Font).Height / 2))));
         }
 
         private void Listbox_measureItem(object sender, MeasureItemEventArgs e)
@@ -336,7 +336,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             }
 
             string path = Options.OutputPath;
-            string fileName = Path.Combine(path, $"Gump(Sec) 0x{i:X}.bmp");
+            string fileName = Path.Combine(path, $"Gump(Sec) {i:D5}.bmp");
             SecondGump.GetGump(i).Save(fileName, ImageFormat.Bmp);
             MessageBox.Show(
                 $"Gump saved to {fileName}",
@@ -360,7 +360,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             }
 
             string path = Options.OutputPath;
-            string fileName = Path.Combine(path, $"Gump(Sec) 0x{i:X}.tiff");
+            string fileName = Path.Combine(path, $"Gump(Sec) {i:D5}.tiff");
             SecondGump.GetGump(i).Save(fileName, ImageFormat.Tiff);
             MessageBox.Show(
                 $"Gump saved to {fileName}",

@@ -577,7 +577,7 @@ namespace UoFiddler.Controls.UserControls
                         continue;
                     }
 
-                    string fileName = Path.Combine(dialog.SelectedPath, $"Gump 0x{index:X4}.{fileExtension}");
+                    string fileName = Path.Combine(dialog.SelectedPath, $"Gump {index:D5}.{fileExtension}");
                     var gump = Gumps.GetGump(index);
                     if (gump is null)
                     {

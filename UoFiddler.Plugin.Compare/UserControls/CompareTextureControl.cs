@@ -93,10 +93,10 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 }
             }
 
-            e.Graphics.DrawString($"0x{i:X}", Font, fontBrush,
+            e.Graphics.DrawString($"{i:D} (0x{i:X})", Font, fontBrush,
                 new PointF(5,
                 e.Bounds.Y + ((e.Bounds.Height / 2) -
-                (e.Graphics.MeasureString($"0x{i:X}", Font).Height / 2))));
+                (e.Graphics.MeasureString($"{i:D} (0x{i:X})", Font).Height / 2))));
         }
 
         private void MeasureOrg(object sender, MeasureItemEventArgs e)
@@ -159,10 +159,10 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 fontBrush = Brushes.Blue;
             }
 
-            e.Graphics.DrawString($"0x{i:X}", Font, fontBrush,
+            e.Graphics.DrawString($"{i:D} (0x{i:X})", Font, fontBrush,
                 new PointF(5,
                 e.Bounds.Y + ((e.Bounds.Height / 2) -
-                (e.Graphics.MeasureString($"0x{i:X}", Font).Height / 2))));
+                (e.Graphics.MeasureString($"{i:D} (0x{i:X})", Font).Height / 2))));
         }
 
         private void MeasureSec(object sender, MeasureItemEventArgs e)
@@ -274,7 +274,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             }
 
             string path = Options.OutputPath;
-            string fileName = Path.Combine(path, $"Texture(Sec) 0x{i:X}.bmp");
+            string fileName = Path.Combine(path, $"Texture(Sec) {i:D5}.bmp");
             SecondTexture.GetTexture(i).Save(fileName, ImageFormat.Bmp);
             MessageBox.Show(
                 $"Texture saved to {fileName}",
@@ -298,7 +298,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
             }
 
             string path = Options.OutputPath;
-            string fileName = Path.Combine(path, $"Texture(Sec) 0x{i:X}.tiff");
+            string fileName = Path.Combine(path, $"Texture(Sec) {i:D5}.tiff");
             SecondTexture.GetTexture(i).Save(fileName, ImageFormat.Tiff);
             MessageBox.Show(
                 $"Texture saved to {fileName}",
