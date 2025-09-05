@@ -225,6 +225,13 @@ namespace UoFiddler.Plugin.MassImport.Forms
                 {
                     entry.Index = -1;
                 }
+                
+                // NEW: optional outputIndex
+                var outAttr = xNode.Attributes["outputIndex"];
+                if (outAttr != null && Utils.ConvertStringToInt(outAttr.InnerText, out int outIdx))
+                {
+                    entry.OutputIndex = outIdx;
+                }
 
                 entry.Remove = bool.Parse(xNode.Attributes["remove"].InnerText);
                 entry.Valid = true;

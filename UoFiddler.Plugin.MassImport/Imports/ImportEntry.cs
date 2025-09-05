@@ -30,6 +30,9 @@ namespace UoFiddler.Plugin.MassImport.Imports
         public bool Remove { get; set; }
 
         public bool Valid { get; set; }
+        
+        // NEW: destination index (optional); -1 means “use Index”
+        public int OutputIndex { get; set; } = -1;
 
         protected virtual void TestFile(ref string message)
         {
@@ -56,6 +59,13 @@ namespace UoFiddler.Plugin.MassImport.Imports
             if (Index > MaxIndex)
             {
                 message += " Invalid Index ";
+                Valid = false;
+            }
+            
+            // NEW: validate OutputIndex if supplied
+            if (OutputIndex >= 0 && OutputIndex > MaxIndex)
+            {
+                message += " Invalid OutputIndex ";
                 Valid = false;
             }
 

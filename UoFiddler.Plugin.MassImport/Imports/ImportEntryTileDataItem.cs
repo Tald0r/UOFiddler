@@ -37,13 +37,15 @@ namespace UoFiddler.Plugin.MassImport.Imports
 
         public override void Import(bool direct, ref Dictionary<string, bool> changedClasses)
         {
-            Ultima.TileData.ItemTable[Index].ReadData(_tiledata);
+            int dest = OutputIndex >= 0 ? OutputIndex : Index;
+            Ultima.TileData.ItemTable[dest].ReadData(_tiledata);
+
             if (!direct)
             {
                 Options.ChangedUltimaClass["TileData"] = true;
-                ControlEvents.FireTileDataChangeEvent(this, Index + 0x4000);
             }
 
+            ControlEvents.FireTileDataChangeEvent(this, dest + 0x4000);
             changedClasses["TileData"] = true;
         }
     }
