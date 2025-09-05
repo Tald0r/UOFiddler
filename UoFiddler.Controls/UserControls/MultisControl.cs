@@ -634,7 +634,7 @@ namespace UoFiddler.Controls.UserControls
                     }
 
                     const int maximumMultiHeight = 127;
-                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi 0x{index:X4}.{fileExtension}");
+                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi {index:D5}.{fileExtension}");
 
                     using (Bitmap multiBitmap = ((MultiComponentList)_refMarker.TreeViewMulti.Nodes[i].Tag)?.GetImage(maximumMultiHeight))
                     {
@@ -675,7 +675,7 @@ namespace UoFiddler.Controls.UserControls
                         continue;
                     }
 
-                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi 0x{index:X4}.txt");
+                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi {index:D5}.txt");
                     multi.ExportToTextFile(fileName);
                 }
                 MessageBox.Show($"All Multis saved to {dialog.SelectedPath}", "Saved", MessageBoxButtons.OK,
@@ -708,7 +708,7 @@ namespace UoFiddler.Controls.UserControls
                         continue;
                     }
 
-                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi 0x{index:X4}.uoa");
+                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi {index:D5}.uoa");
                     multi.ExportToUOAFile(fileName);
                 }
                 MessageBox.Show($"All Multis saved to {dialog.SelectedPath}", "Saved", MessageBoxButtons.OK,
@@ -741,7 +741,7 @@ namespace UoFiddler.Controls.UserControls
                         continue;
                     }
 
-                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi 0x{index:X4}.wsc");
+                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi {index:D5}.wsc");
                     multi.ExportToWscFile(fileName);
                 }
                 MessageBox.Show($"All Multis saved to {dialog.SelectedPath}", "Saved", MessageBoxButtons.OK,
@@ -774,7 +774,7 @@ namespace UoFiddler.Controls.UserControls
                         continue;
                     }
 
-                    string fileName = Path.Combine(dialog.SelectedPath, $"{index:D4}.csv");
+                    string fileName = Path.Combine(dialog.SelectedPath, $"{index:D5}.csv");
                     multi.ExportToCsvFile(fileName);
                 }
                 MessageBox.Show($"All Multis saved to {dialog.SelectedPath}", "Saved", MessageBoxButtons.OK,
@@ -807,7 +807,7 @@ namespace UoFiddler.Controls.UserControls
                         continue;
                     }
 
-                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi 0x{index:X4}.uox3");
+                    string fileName = Path.Combine(dialog.SelectedPath, $"Multi {index:D5}.uox3");
                     multi.ExportToUox3File(fileName);
                 }
                 MessageBox.Show($"All Multis saved to {dialog.SelectedPath}", "Saved", MessageBoxButtons.OK,
