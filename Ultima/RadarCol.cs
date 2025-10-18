@@ -75,7 +75,11 @@ namespace Ultima
 
                 for (int i = 0; i < Colors.Length; ++i)
                 {
-                    tex.WriteLine("0x{0:X4};{1}", i, Colors[i]);
+                    // Use standard decimal formatting
+                    tex.WriteLine($"{i};{(int)Colors[i]}");
+            
+                    // old hex format
+                    // tex.WriteLine("0x{0:X4};{1}", i, Colors[i]);
                 }
             }
         }
