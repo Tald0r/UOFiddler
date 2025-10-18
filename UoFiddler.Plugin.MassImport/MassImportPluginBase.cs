@@ -32,12 +32,12 @@ namespace UoFiddler.Plugin.MassImport
         /// <summary>
         /// Author of the plugin
         /// </summary>
-        public override string Author { get; } = "Turley";
+        public override string Author { get; } = "Turley & Taldor";
 
         /// <summary>
         /// Version of the plugin
         /// </summary>
-        public override string Version { get; } = "1.1.0";
+        public override string Version { get; } = "1.2.0";
 
         /// <summary>
         /// Host of the plugin.

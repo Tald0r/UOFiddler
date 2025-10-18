@@ -114,7 +114,7 @@ namespace UoFiddler.Plugin.MassImport.Imports
 
                         string[] split = line.Split(';');
 
-                        if (split.Length < 36)
+                        if (split.Length < 35) // FIX for OLD CLIENT LandData.csv which have only 35 entries
                         {
                             continue;
                         }
