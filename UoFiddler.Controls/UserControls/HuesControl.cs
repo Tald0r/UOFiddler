@@ -159,7 +159,7 @@ namespace UoFiddler.Controls.UserControls
                 Hue hue = Hues.List[index];
                 Rectangle stringRect = new Rectangle(3, y * _itemHeight, pictureBox.Width, _itemHeight);
                 e.Graphics.DrawString(
-                    $"{hue.Index,-5} {$"(0x{hue.Index:X})",-7} {hue.Name}", Font, Brushes.Black, stringRect);
+                    $"{hue.Index + 1,-5} {$"(0x{hue.Index + 1:X})",-7} {hue.Name}", Font, Brushes.Black, stringRect);
 
                 for (int i = 0; i < hue.Colors.Length; ++i)
                 {
@@ -267,7 +267,7 @@ namespace UoFiddler.Controls.UserControls
         private void OnExport(object sender, EventArgs e)
         {
             string path = Options.OutputPath;
-            string fileName = Path.Combine(path, $"Hue {_selected}.txt");
+            string fileName = Path.Combine(path, $"Hue {_selected + 1}.txt");
             Hues.List[_selected].Export(fileName);
             MessageBox.Show($"Hue saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
         }
