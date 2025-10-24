@@ -244,7 +244,7 @@ namespace UoFiddler.Controls.UserControls
 
         private void OnTextChangedReplace(object sender, EventArgs e)
         {
-            ReplaceText.ForeColor = Utils.ConvertStringToInt(ReplaceText.Text, out _, 1, 3000) ? Color.Black : Color.Red;
+            ReplaceText.ForeColor = Utils.ConvertStringToInt(ReplaceText.Text, out _, 1, Hues.List.Length) ? Color.Black : Color.Red;
         }
 
         private void OnKeyDownReplace(object sender, KeyEventArgs e)

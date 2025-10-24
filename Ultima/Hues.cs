@@ -19,6 +19,14 @@ namespace Ultima
             Initialize();
         }
 
+        private static int ComputeCountFromLength(long fileLength)
+        {
+            if (fileLength <= 0) return 3000;
+            const int groupSize = 4 + 8 * (32 * 2 + 2 + 2 + 20); // 708
+            int groups = (int)(fileLength / groupSize);
+            return groups > 0 ? groups * 8 : 3000; // Fallback for bad files
+        }
+
         /// <summary>
         /// Reads hues.mul and fills <see cref="List"/>
         /// </summary>
@@ -27,21 +35,29 @@ namespace Ultima
             string path = Files.GetFilePath("hues.mul");
             int index = 0;
 
-            const int maxHueCount = 3000;
-            List = new Hue[maxHueCount];
+            if (!File.Exists(path))
+            {
+                // Keep fallback for missing file
+                List = new Hue[3000];
+                _header = new int[375]; 
+                for (int i = 0; i < 3000; ++i)
+                {
+                    List[i] = new Hue(i);
+                }
+                return;
+            }
 
             if (path != null)
             {
                 using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    int blockCount = (int)fs.Length / 708;
-
-                    if (blockCount > 375)
-                    {
-                        blockCount = 375;
-                    }
-
+                    int count = ComputeCountFromLength(fs.Length); // Dynamic size
+                    int blockCount = count / 8;
+                    
+                    // DYNAMICALLY SIZE BOTH
+                    List = new Hue[count];
                     _header = new int[blockCount];
+                    
                     int structSize = Marshal.SizeOf(typeof(HueDataMul));
                     var buffer = new byte[blockCount * (4 + (8 * structSize))];
                     GCHandle gc = GCHandle.Alloc(buffer, GCHandleType.Pinned);
@@ -141,7 +157,7 @@ namespace Ultima
         {
             index &= 0x3FFF;
 
-            if (index >= 0 && index < 3000)
+            if (index >= 0 && index < List.Length)
             {
                 return List[index];
             }
