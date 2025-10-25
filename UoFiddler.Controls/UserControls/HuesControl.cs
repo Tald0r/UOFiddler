@@ -390,5 +390,50 @@ namespace UoFiddler.Controls.UserControls
 
             MessageBox.Show($"Hue names list saved to {fileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
         }
+
+        private void ExportAllHuesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var dlg = new FolderBrowserDialog())
+            {
+                dlg.Description = "Choose a folder to export all hues as .txt";
+                dlg.ShowNewFolderButton = true;
+
+                if (dlg.ShowDialog(this) != DialogResult.OK || string.IsNullOrWhiteSpace(dlg.SelectedPath))
+                    return;
+
+                string baseDir = dlg.SelectedPath;
+                int total = Hues.List.Length;
+                int exported = 0;
+
+                try
+                {
+                    for (int i = 0; i < total; i++)
+                    {
+                        var hue = Hues.List[i];
+                        if (hue == null)
+                            continue;
+
+                        // 1-based index in filename to match UI
+                        string fileName = $"Hue {(i + 1).ToString("0000")}.txt";
+                        string outPath = Path.Combine(baseDir, fileName);
+
+                        // Reuse the existing single-hue exporter
+                        hue.Export(outPath);
+                        exported++;
+                    }
+                }
+                catch
+                {
+                    // TODO: ignored?
+                    // ignored
+                }
+
+                MessageBox.Show(this,
+                    $"Exported {exported} hues to:\n{baseDir}",
+                    "Export all hues",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+        }
     }
 }

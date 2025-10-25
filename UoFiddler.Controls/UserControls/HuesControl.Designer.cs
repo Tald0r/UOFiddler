@@ -49,6 +49,7 @@ namespace UoFiddler.Controls.UserControls
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             exportAllHueNamesListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            exportAllHuesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripContainer = new System.Windows.Forms.ToolStripContainer();
             vScrollBar = new System.Windows.Forms.VScrollBar();
             pictureBox = new System.Windows.Forms.PictureBox();
@@ -68,9 +69,9 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip1
             // 
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { saveToolStripMenuItem, replaceToolStripMenuItem, exportToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, exportAllHueNamesListToolStripMenuItem });
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { saveToolStripMenuItem, replaceToolStripMenuItem, exportToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, exportAllHueNamesListToolStripMenuItem, exportAllHuesToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(203, 120);
+            contextMenuStrip1.Size = new System.Drawing.Size(203, 164);
             // 
             // saveToolStripMenuItem
             // 
@@ -118,6 +119,13 @@ namespace UoFiddler.Controls.UserControls
             exportAllHueNamesListToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             exportAllHueNamesListToolStripMenuItem.Text = "Export all hue names list";
             exportAllHueNamesListToolStripMenuItem.Click += ExportAllHueNamesListToolStripMenuItem_Click;
+            // 
+            // exportAllHuesToolStripMenuItem
+            // 
+            exportAllHuesToolStripMenuItem.Name = "exportAllHuesToolStripMenuItem";
+            exportAllHuesToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            exportAllHuesToolStripMenuItem.Text = "Export all hues";
+            exportAllHuesToolStripMenuItem.Click += ExportAllHuesToolStripMenuItem_Click;
             // 
             // toolStripContainer
             // 
@@ -170,6 +178,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // HuesTopMenuToolStrip
             // 
+            HuesTopMenuToolStrip.Dock = System.Windows.Forms.DockStyle.None;
             HuesTopMenuToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             HuesTopMenuToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { HueIndexToolStripLabel, HueIndexToolStripTextBox, HueNameToolStripLabel, HueNameToolStripTextBox, SearchNameToolStripButton });
             HuesTopMenuToolStrip.Location = new System.Drawing.Point(0, 0);
@@ -257,5 +266,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripButton SearchNameToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exportAllHueNamesListToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportAllHuesToolStripMenuItem;
     }
 }
