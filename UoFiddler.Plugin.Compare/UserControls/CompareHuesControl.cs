@@ -71,7 +71,6 @@ namespace UoFiddler.Plugin.Compare.UserControls
             using (Graphics g = Graphics.FromImage(_bmp1))
             {
                 g.Clear(Color.White);
-
                 for (int y = 0; y <= _row; y++)
                 {
                     int index = GetIndex(y);
@@ -85,7 +84,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
                     {
                         g.FillRectangle(SystemBrushes.Highlight, rect);
                     }
-                    else if (!Compare(index))
+                    else if (!Compare(index)) // This is now safe
                     {
                         g.FillRectangle(Brushes.Red, rect);
                     }
@@ -94,11 +93,18 @@ namespace UoFiddler.Plugin.Compare.UserControls
                         g.FillRectangle(SystemBrushes.Window, rect);
                     }
 
+                    // FIX: Check if index is valid for this list
+                    if (index >= Hues.List.Length)
+                    {
+                        g.DrawString($"-- ({index + 1}) --", Font, Brushes.Gray, rect);
+                        continue;
+                    }
+
+                    // Original drawing code...
                     float size = (float)(pictureBox1.Width - 200) / 32;
                     Hue hue = Hues.List[index];
                     Rectangle stringRect = new Rectangle(3, y * _itemHeight, pictureBox1.Width, _itemHeight);
-                    g.DrawString($"{hue.Index + 1,-5} {$"(0x{hue.Index + 1:X})",-7} {hue.Name}", Font, Brushes.Black, stringRect);
-
+                    g.DrawString($"{hue.Index + 1,-5} (0x{hue.Index + 1:X}) {hue.Name}", Font, Brushes.Black, stringRect);
                     for (int i = 0; i < hue.Colors.Length; i++)
                     {
                         Rectangle rectangle = new Rectangle(200 + (int)Math.Round(i * size), y * _itemHeight, (int)Math.Round(size + 1f), _itemHeight);
@@ -118,7 +124,6 @@ namespace UoFiddler.Plugin.Compare.UserControls
             using (Graphics g = Graphics.FromImage(_bmp2))
             {
                 g.Clear(Color.White);
-
                 for (int y = 0; y <= _row; y++)
                 {
                     int index = GetIndex(y);
@@ -132,7 +137,7 @@ namespace UoFiddler.Plugin.Compare.UserControls
                     {
                         g.FillRectangle(SystemBrushes.Highlight, rect);
                     }
-                    else if (!Compare(index))
+                    else if (!Compare(index)) // This is now safe
                     {
                         g.FillRectangle(Brushes.Red, rect);
                     }
@@ -141,11 +146,18 @@ namespace UoFiddler.Plugin.Compare.UserControls
                         g.FillRectangle(SystemBrushes.Window, rect);
                     }
 
+                    // FIX: Check if index is valid for this list
+                    if (index >= SecondHue.List.Length)
+                    {
+                        g.DrawString($"-- ({index + 1}) --", Font, Brushes.Gray, rect);
+                        continue;
+                    }
+                    
+                    // Original drawing code...
                     float size = (float)(pictureBox2.Width - 200) / 32;
                     Hue hue = SecondHue.List[index];
                     Rectangle stringRect = new Rectangle(3, y * _itemHeight, pictureBox2.Width, _itemHeight);
-                    g.DrawString($"{hue.Index + 1,-5} {$"(0x{hue.Index + 1:X})",-7} {hue.Name}", Font, Brushes.Black, stringRect);
-
+                    g.DrawString($"{hue.Index + 1,-5} (0x{hue.Index + 1:X}) {hue.Name}", Font, Brushes.Black, stringRect);
                     for (int i = 0; i < hue.Colors.Length; i++)
                     {
                         Rectangle rectangle = new Rectangle(200 + (int)Math.Round(i * size), y * _itemHeight, (int)Math.Round(size + 1f), _itemHeight);
@@ -226,7 +238,6 @@ namespace UoFiddler.Plugin.Compare.UserControls
             {
                 return;
             }
-
             string path = textBox1.Text;
             string file = Path.Combine(path, "hues.mul");
             if (!File.Exists(file))
@@ -236,6 +247,10 @@ namespace UoFiddler.Plugin.Compare.UserControls
 
             SecondHue.Initialize(file);
             _hue2Loaded = true;
+
+            // FIX: Set scrollbar maximum to the larger of the two lists
+            vScrollBar.Maximum = Math.Max(Hues.List.Length, SecondHue.List.Length);
+
             vScrollBar.Value = 0;
             _selected = 0;
             PaintBox1();
@@ -290,19 +305,24 @@ namespace UoFiddler.Plugin.Compare.UserControls
                 return true;
             }
 
-            Hue org = Hues.List[index];
-            Hue sec = SecondHue.List[index];
+            // FIX: Add bounds checking before accessing lists
+            Hue org = (index < Hues.List.Length) ? Hues.List[index] : null;
+            Hue sec = (index < SecondHue.List.Length) ? SecondHue.List[index] : null;
+
             if (org == null && sec == null)
             {
                 _compare[index] = true;
                 return true;
             }
+
+            // If one is null but not the other, they are different
             if (org == null || sec == null)
             {
                 _compare[index] = false;
                 return false;
             }
 
+            // Compare colors
             for (int i = 0; i < org.Colors.Length; i++)
             {
                 if (org.Colors[i] != sec.Colors[i])
@@ -310,6 +330,13 @@ namespace UoFiddler.Plugin.Compare.UserControls
                     _compare[index] = false;
                     return false;
                 }
+            }
+            
+            // Compare names
+            if (!string.Equals(org.Name, sec.Name))
+            {
+                _compare[index] = false;
+                return false;
             }
 
             _compare[index] = true;
