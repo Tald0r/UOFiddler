@@ -47,6 +47,7 @@ namespace UoFiddler.Controls.UserControls
             ReplaceText = new System.Windows.Forms.ToolStripTextBox();
             exportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             importToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            importFromCSVToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             exportAllHueNamesListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             exportAllHuesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -69,7 +70,7 @@ namespace UoFiddler.Controls.UserControls
             // 
             // contextMenuStrip1
             // 
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { saveToolStripMenuItem, replaceToolStripMenuItem, exportToolStripMenuItem, importToolStripMenuItem, toolStripSeparator1, exportAllHueNamesListToolStripMenuItem, exportAllHuesToolStripMenuItem });
+            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { saveToolStripMenuItem, replaceToolStripMenuItem, exportToolStripMenuItem, importToolStripMenuItem, importFromCSVToolStripMenuItem, toolStripSeparator1, exportAllHueNamesListToolStripMenuItem, exportAllHuesToolStripMenuItem });
             contextMenuStrip1.Name = "contextMenuStrip1";
             contextMenuStrip1.Size = new System.Drawing.Size(203, 164);
             // 
@@ -107,6 +108,13 @@ namespace UoFiddler.Controls.UserControls
             importToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
             importToolStripMenuItem.Text = "Import..";
             importToolStripMenuItem.Click += OnImport;
+            // 
+            // importFromCSVToolStripMenuItem
+            // 
+            importFromCSVToolStripMenuItem.Name = "importFromCSVToolStripMenuItem";
+            importFromCSVToolStripMenuItem.Size = new System.Drawing.Size(202, 22);
+            importFromCSVToolStripMenuItem.Text = "Import from CSV";
+            importFromCSVToolStripMenuItem.Click += OnImportFromCsv;
             // 
             // toolStripSeparator1
             // 
@@ -267,5 +275,6 @@ namespace UoFiddler.Controls.UserControls
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exportAllHueNamesListToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportAllHuesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem importFromCSVToolStripMenuItem;
     }
 }

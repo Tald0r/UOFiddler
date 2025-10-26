@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using Ultima;
@@ -435,5 +436,106 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information);
             }
         }
+
+        private void OnImportFromCsv(object sender, EventArgs e)
+        {
+            using (var dlg = new OpenFileDialog
+            {
+                Title = "Select hueList.csv",
+                Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+                Multiselect = false,
+                CheckFileExists = true
+            })
+            {
+                if (dlg.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                string csvPath = dlg.FileName;
+                string baseDir = Path.GetDirectoryName(csvPath);
+
+                int imported = 0, skipped = 0, errors = 0, outOfRange = 0, notFound = 0;
+
+                try
+                {
+                    using (var sr = new StreamReader(csvPath, Encoding.GetEncoding(1252), true))
+                    {
+                        string line;
+                        while ((line = sr.ReadLine()) != null)
+                        {
+                            line = line.Trim();
+                            if (line.Length == 0) continue;
+                            if (line.StartsWith("#") || line.StartsWith("//")) continue;
+
+                            // allow ; or , as delimiters
+                            var parts = line.Replace(';', ',').Split(',');
+                            if (parts.Length < 2)
+                            {
+                                skipped++;
+                                continue;
+                            }
+
+                            if (!int.TryParse(parts[0].Trim(), out int txtHueId) ||
+                                !int.TryParse(parts[1].Trim(), out int destUi))
+                            {
+                                skipped++;
+                                continue;
+                            }
+
+                            // Build source file: "Hue 01555.txt" (1-based, 5-digit zero-padded)
+                            string srcName = $"Hue {txtHueId:00000}.txt";
+                            string srcPath = Path.Combine(baseDir, srcName);
+
+                            if (!File.Exists(srcPath))
+                            {
+                                notFound++;
+                                continue;
+                            }
+
+                            // Convert UI 1-based to internal 0-based index
+                            int dest = destUi - 1;
+                            if (dest < 0 || dest >= Ultima.Hues.List.Length)
+                            {
+                                outOfRange++;
+                                continue;
+                            }
+
+                            try
+                            {
+                                // Reuse the existing per-hue importer
+                                Hues.List[dest].Import(srcPath);
+
+                                // Flag change so Save() will persist
+                                Options.ChangedUltimaClass["Hues"] = true;
+
+                                // Update UI for this hue
+                                ControlEvents.FireHueChangeEvent();
+
+                                imported++;
+                            }
+                            catch
+                            {
+                                errors++;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, $"Import failed:\n{ex.Message}", "Import from CSV",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Final UI refresh (optional if you already refresh on per-hue change)
+                Invalidate();
+
+                MessageBox.Show(this,
+                    $"Done.\nImported: {imported}\nMissing files: {notFound}\nOut of range: {outOfRange}\nSkipped (bad lines): {skipped}\nErrors: {errors}",
+                    "Import from CSV",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+        }
+
     }
 }
