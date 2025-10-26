@@ -455,6 +455,9 @@ namespace UoFiddler.Controls.UserControls
 
                 int imported = 0, skipped = 0, errors = 0, outOfRange = 0, notFound = 0;
 
+                Cursor prev = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
+
                 try
                 {
                     using (var sr = new StreamReader(csvPath, Encoding.GetEncoding(1252), true))
@@ -481,8 +484,8 @@ namespace UoFiddler.Controls.UserControls
                                 continue;
                             }
 
-                            // Build source file: "Hue 01555.txt" (1-based, 5-digit zero-padded)
-                            string srcName = $"Hue {txtHueId:00000}.txt";
+                            // Build source file: "Hue 00572.txt" (1-based, 4-digit zero-padded)
+                            string srcName = $"Hue {txtHueId:0000}.txt";
                             string srcPath = Path.Combine(baseDir, srcName);
 
                             if (!File.Exists(srcPath))
@@ -501,15 +504,8 @@ namespace UoFiddler.Controls.UserControls
 
                             try
                             {
-                                // Reuse the existing per-hue importer
+                                // Reuse existing per-hue importer (same as OnImport)
                                 Hues.List[dest].Import(srcPath);
-
-                                // Flag change so Save() will persist
-                                Options.ChangedUltimaClass["Hues"] = true;
-
-                                // Update UI for this hue
-                                ControlEvents.FireHueChangeEvent();
-
                                 imported++;
                             }
                             catch
@@ -518,16 +514,25 @@ namespace UoFiddler.Controls.UserControls
                             }
                         }
                     }
+
+                    // Mark once and refresh once
+                    Options.ChangedUltimaClass["Hues"] = true;
+                    ControlEvents.FireHueChangeEvent();
+
+                    // Optional control refresh
+                    Invalidate();
                 }
                 catch (Exception ex)
                 {
+                    Cursor.Current = prev;
                     MessageBox.Show(this, $"Import failed:\n{ex.Message}", "Import from CSV",
                         MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-
-                // Final UI refresh (optional if you already refresh on per-hue change)
-                Invalidate();
+                finally
+                {
+                    Cursor.Current = prev;
+                }
 
                 MessageBox.Show(this,
                     $"Done.\nImported: {imported}\nMissing files: {notFound}\nOut of range: {outOfRange}\nSkipped (bad lines): {skipped}\nErrors: {errors}",
@@ -536,6 +541,5 @@ namespace UoFiddler.Controls.UserControls
                     MessageBoxIcon.Information);
             }
         }
-
     }
 }
