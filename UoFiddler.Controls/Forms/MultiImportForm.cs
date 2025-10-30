@@ -45,7 +45,7 @@ namespace UoFiddler.Controls.Forms
                         type = "txt";
                         break;
                     case 1:
-                        type = "uoa";
+                        type = "txt";
                         break;
                     case 2:
                         type = "uoab";
