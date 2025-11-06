@@ -21,6 +21,7 @@ namespace UoFiddler.Controls.Forms
     {
         private readonly int _id;
         private readonly Action<int, MultiComponentList> _changeMultiAction;
+        private string[] _selectedFiles = Array.Empty<string>(); // filled by Browse when MassImport is enabled
 
         public MultiImportForm(int id, Action<int, MultiComponentList> changeMultiAction)
         {
@@ -35,7 +36,8 @@ namespace UoFiddler.Controls.Forms
 
         private void OnClickBrowse(object sender, EventArgs e)
         {
-            using (OpenFileDialog dialog = new OpenFileDialog { Multiselect = false })
+            // Multiselect mirrors the checkbox state
+            using (OpenFileDialog dialog = new OpenFileDialog { Multiselect = MassImportCheckBox.Checked })
             {
                 string type = "txt";
 
@@ -64,26 +66,77 @@ namespace UoFiddler.Controls.Forms
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    filenameTextBox.Text = dialog.FileName;
+                    if (dialog.Multiselect)
+                    {
+                        _selectedFiles = dialog.FileNames;
+                        // Show first file and a count hint
+                        filenameTextBox.Text = _selectedFiles.Length > 0
+                            ? $"{_selectedFiles[0]} (+{_selectedFiles.Length - 1} more)"
+                            : string.Empty;
+                    }
+                    else
+                    {
+                        _selectedFiles = new[] { dialog.FileName };
+                        filenameTextBox.Text = dialog.FileName;
+                    }
                 }
             }
         }
 
         private void OnClickImport(object sender, EventArgs e)
         {
-            if (!File.Exists(filenameTextBox.Text))
+            // Fallback for legacy behavior if user bypassed Browse
+            if (_selectedFiles == null || _selectedFiles.Length == 0)
             {
-                return;
+                if (!File.Exists(filenameTextBox.Text))
+                    return;
+
+                _selectedFiles = new[] { filenameTextBox.Text };
             }
 
             Multis.ImportType type = (Multis.ImportType)importTypeComboBox.SelectedIndex;
-            MultiComponentList multi = Multis.ImportFromFile(_id, filenameTextBox.Text, type);
 
-            _changeMultiAction(_id, multi);
+            if (MassImportCheckBox.Checked)
+            {
+                int idCursor = _id;
+                foreach (var path in _selectedFiles)
+                {
+                    if (!File.Exists(path))
+                    {
+                        idCursor++;
+                        continue;
+                    }
 
-            Options.ChangedUltimaClass["Multis"] = true;
+                    MultiComponentList multi = Multis.ImportFromFile(idCursor, path, type);
+                    _changeMultiAction(idCursor, multi);
+                    idCursor++;
+                }
 
-            Close();
+                Options.ChangedUltimaClass["Multis"] = true;
+                Close();
+                return;
+            }
+            else
+            {
+                // Single import path (original behavior)
+                string path = _selectedFiles[0];
+                if (!File.Exists(path))
+                    return;
+
+                MultiComponentList multi = Multis.ImportFromFile(_id, path, type);
+                _changeMultiAction(_id, multi);
+                Options.ChangedUltimaClass["Multis"] = true;
+                Close();
+            }
         }
+
+        private void MassImportCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            // Clear any previously selected files to avoid accidental reuse when the mode changes
+            _selectedFiles = Array.Empty<string>();
+            filenameTextBox.Clear();
+            // The OpenFileDialog.Multiselect is set at Browse time from the checkbox, so no further action needed here
+        }
+
     }
 }
