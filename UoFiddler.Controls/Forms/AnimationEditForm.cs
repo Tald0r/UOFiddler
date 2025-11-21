@@ -1189,7 +1189,8 @@ namespace UoFiddler.Controls.Forms
             }
 
             string path = Options.OutputPath;
-            string fileName = Path.Combine(path, $"anim{_fileType}_0x{_currentBody:X}.vd");
+            // New format: anim{fileType}_{paddedDecimalId}_0x{HexId}.vd
+            string fileName = Path.Combine(path, $"anim{_fileType}_{_currentBody:D4}_0x{_currentBody:X}.vd");
             AnimationEdit.ExportToVD(_fileType, _currentBody, fileName);
 
             MessageBox.Show($"Animation saved to {Options.OutputPath}", "Export", MessageBoxButtons.OK,
