@@ -161,6 +161,7 @@ namespace UoFiddler.Controls.UserControls
             malasToolStripMenuItem.Text = Options.MapNames[3];
             tokunoToolStripMenuItem.Text = Options.MapNames[4];
             terMurToolStripMenuItem.Text = Options.MapNames[5];
+            nithosToolStripMenuItem.Text = Options.MapNames[6];
 
             if (OverlayObjectTree.Nodes.Count <= 0)
             {
@@ -172,7 +173,8 @@ namespace UoFiddler.Controls.UserControls
             OverlayObjectTree.Nodes[2].Text = Options.MapNames[2];
             OverlayObjectTree.Nodes[3].Text = Options.MapNames[3];
             OverlayObjectTree.Nodes[4].Text = Options.MapNames[4];
-            OverlayObjectTree.Nodes[5].Text = Options.MapNames[5];
+            OverlayObjectTree.Nodes[5].Text = Options.MapNames[5];            
+            OverlayObjectTree.Nodes[6].Text = Options.MapNames[6];
             OverlayObjectTree.Invalidate();
         }
 
@@ -279,6 +281,7 @@ namespace UoFiddler.Controls.UserControls
             ilshenarToolStripMenuItem.Checked = false;
             tokunoToolStripMenuItem.Checked = false;
             terMurToolStripMenuItem.Checked = false;
+            nithosToolStripMenuItem.Checked = false;
         }
 
         private void ChangeMapFelucca(object sender, EventArgs e)
@@ -365,6 +368,20 @@ namespace UoFiddler.Controls.UserControls
             ChangeMap();
         }
 
+        private void ChangeMapNithos(object sender, EventArgs e)
+        {
+            if (nithosToolStripMenuItem.Checked)
+            {
+                return;
+            }
+
+            ResetCheckedMap();
+            nithosToolStripMenuItem.Checked = true;
+            CurrentMap = Map.Nithos;
+            _currentMapId = 6;
+            ChangeMap();
+        }
+        
         private void OnMouseDown(object sender, MouseEventArgs e)
         {
             if (PreloadWorker.IsBusy)
@@ -487,6 +504,10 @@ namespace UoFiddler.Controls.UserControls
                 case 5:
                     terMurToolStripMenuItem.Checked = true;
                     CurrentMap = Map.TerMur;
+                    break;
+                case 6:
+                    nithosToolStripMenuItem.Checked = true;
+                    CurrentMap = Map.Nithos;
                     break;
             }
         }
@@ -856,7 +877,7 @@ namespace UoFiddler.Controls.UserControls
                     int c = int.Parse(element.GetAttribute("color"));
                     string text = element.GetAttribute("text");
                     OverlayCursor o = new OverlayCursor(new Point(x, y), m, text, Color.FromArgb(c));
-                    TreeNode node = new TreeNode(text) {Tag = o};
+                    TreeNode node = new TreeNode(text) { Tag = o };
                     OverlayObjectTree.Nodes[m].Nodes.Add(node);
                 }
             }
@@ -901,6 +922,12 @@ namespace UoFiddler.Controls.UserControls
             node = new TreeNode(Options.MapNames[5])
             {
                 Tag = 5
+            };
+            OverlayObjectTree.Nodes.Add(node);
+
+            node = new TreeNode(Options.MapNames[6])
+            {
+                Tag = 6
             };
             OverlayObjectTree.Nodes.Add(node);
         }
@@ -1297,6 +1324,7 @@ namespace UoFiddler.Controls.UserControls
             };
             _showMapReplaceTilesForm.Show();
         }
+
     }
 
     public class OverlayObject

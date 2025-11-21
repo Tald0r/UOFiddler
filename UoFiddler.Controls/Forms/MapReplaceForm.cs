@@ -41,6 +41,7 @@ namespace UoFiddler.Controls.Forms
             comboBoxMapID.Items.Add(new RMalas());
             comboBoxMapID.Items.Add(new RTokuno());
             comboBoxMapID.Items.Add(new RTerMur());
+            comboBoxMapID.Items.Add(new RNithos());
             comboBoxMapID.EndUpdate();
             comboBoxMapID.SelectedIndex = 0;
         }
@@ -192,48 +193,52 @@ namespace UoFiddler.Controls.Forms
                         {
                             for (int y = 0; y < blockY; ++y)
                             {
+                                bool copied = false;
                                 if (tox <= x && x <= tox2 && toy <= y && y <= toy2)
                                 {
-                                    mMapReaderCopy.BaseStream.Seek((((x - tox + x1) * blockYReplace) + (y - toy) + y1) * 196, SeekOrigin.Begin);
-                                    int header = mMapReaderCopy.ReadInt32();
-                                    binMul.Write(header);
+                                    long offset = (((x - tox + x1) * blockYReplace) + (y - toy) + y1) * 196;
+                                    if (offset + 196 <= mMapReaderCopy.BaseStream.Length)
+                                    {
+                                        mMapReaderCopy.BaseStream.Seek(offset, SeekOrigin.Begin);
+                                        int header = mMapReaderCopy.ReadInt32();
+                                        binMul.Write(header);
+                                        for (int i = 0; i < 64; ++i)
+                                        {
+                                            ushort tileId = mMapReaderCopy.ReadUInt16();
+                                            sbyte z = mMapReaderCopy.ReadSByte();
+                                            tileId = Art.GetLegalItemId(tileId);
+                                            if (z < -128) z = -128;
+                                            if (z > 127) z = 127;
+                                            binMul.Write(tileId);
+                                            binMul.Write(z);
+                                        }
+                                        copied = true;
+                                    }
                                 }
-                                else
+                                if (!copied)
                                 {
                                     mMapReader.BaseStream.Seek(((x * blockY) + y) * 196, SeekOrigin.Begin);
                                     int header = mMapReader.ReadInt32();
                                     binMul.Write(header);
-                                }
-                                for (int i = 0; i < 64; ++i)
-                                {
-                                    ushort tileId;
-                                    sbyte z;
-
-                                    if (tox <= x && x <= tox2 && toy <= y && y <= toy2)
+                                    for (int i = 0; i < 64; ++i)
                                     {
-                                        tileId = mMapReaderCopy.ReadUInt16();
-                                        z = mMapReaderCopy.ReadSByte();
-                                    }
-                                    else
-                                    {
-                                        tileId = mMapReader.ReadUInt16();
-                                        z = mMapReader.ReadSByte();
-                                    }
+                                        ushort tileId = mMapReader.ReadUInt16();
+                                        sbyte z = mMapReader.ReadSByte();
+                                        tileId = Art.GetLegalItemId(tileId);
 
-                                    tileId = Art.GetLegalItemId(tileId);
+                                        if (z < -128)
+                                        {
+                                            z = -128;
+                                        }
 
-                                    if (z < -128)
-                                    {
-                                        z = -128;
+                                        if (z > 127)
+                                        {
+                                            z = 127;
+                                        }
+
+                                        binMul.Write(tileId);
+                                        binMul.Write(z);
                                     }
-
-                                    if (z > 127)
-                                    {
-                                        z = 127;
-                                    }
-
-                                    binMul.Write(tileId);
-                                    binMul.Write(z);
                                 }
                                 progressBar1.PerformStep();
                             }
@@ -311,10 +316,23 @@ namespace UoFiddler.Controls.Forms
                                 int lookup, length, extra;
                                 if (tox <= x && x <= tox2 && toy <= y && y <= toy2)
                                 {
-                                    mIndexReaderCopy.BaseStream.Seek((((x - tox + x1) * blockYReplace) + (y - toy) + y1) * 12, SeekOrigin.Begin);
-                                    lookup = mIndexReaderCopy.ReadInt32();
-                                    length = mIndexReaderCopy.ReadInt32();
-                                    extra = mIndexReaderCopy.ReadInt32();
+                                    long offsetCopy = (((x - tox + x1) * blockYReplace) + (y - toy) + y1) * 12;
+                                    if (offsetCopy + 12 <= mIndexReaderCopy.BaseStream.Length)
+                                    {
+                                        mIndexReaderCopy.BaseStream.Seek(offsetCopy, SeekOrigin.Begin);
+                                        lookup = mIndexReaderCopy.ReadInt32();
+                                        length = mIndexReaderCopy.ReadInt32();
+                                        extra = mIndexReaderCopy.ReadInt32();
+                                    }
+                                    else
+                                    {
+                                        // Out of data, so read from the original/target, don't touch!
+                                        long offsetTarget = ((x * blockY) + y) * 12;
+                                        mIndexReader.BaseStream.Seek(offsetTarget, SeekOrigin.Begin);
+                                        lookup = mIndexReader.ReadInt32();
+                                        length = mIndexReader.ReadInt32();
+                                        extra = mIndexReader.ReadInt32();
+                                    }
                                 }
                                 else
                                 {
@@ -536,6 +554,11 @@ namespace UoFiddler.Controls.Forms
         private class RTerMur : SupportedMaps
         {
             public RTerMur() : base(5, Options.MapNames[5], 1280, 4096) { }
+        }
+        
+        private class RNithos : SupportedMaps
+        {
+            public RNithos() : base(6, Options.MapNames[6], 10000, 4096) { }
         }
     }
 }

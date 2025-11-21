@@ -63,7 +63,9 @@ namespace UoFiddler.Forms
             label9 = new System.Windows.Forms.Label();
             FocusColorLabel = new System.Windows.Forms.Label();
             SelectedColorLabel = new System.Windows.Forms.Label();
+            label11 = new System.Windows.Forms.Label();
             groupBox3 = new System.Windows.Forms.GroupBox();
+            map6Nametext = new System.Windows.Forms.TextBox();
             map5Nametext = new System.Windows.Forms.TextBox();
             argstext = new System.Windows.Forms.TextBox();
             cmdtext = new System.Windows.Forms.TextBox();
@@ -298,7 +300,7 @@ namespace UoFiddler.Forms
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new System.Drawing.Point(7, 211);
+            label7.Location = new System.Drawing.Point(7, 230);
             label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label7.Name = "label7";
             label7.Size = new System.Drawing.Size(33, 15);
@@ -309,7 +311,7 @@ namespace UoFiddler.Forms
             // label8
             // 
             label8.AutoSize = true;
-            label8.Location = new System.Drawing.Point(7, 241);
+            label8.Location = new System.Drawing.Point(7, 260);
             label8.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             label8.Name = "label8";
             label8.Size = new System.Drawing.Size(31, 15);
@@ -327,6 +329,17 @@ namespace UoFiddler.Forms
             label9.TabIndex = 15;
             label9.Text = "map5 Name";
             toolTip1.SetToolTip(label9, "Defines the map name");
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Location = new System.Drawing.Point(7, 200);
+            label11.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label11.Name = "label11";
+            label11.Size = new System.Drawing.Size(72, 15);
+            label11.TabIndex = 17;
+            label11.Text = "map6 Name";
+            toolTip1.SetToolTip(label11, "Defines the map name");
             // 
             // FocusColorLabel
             // 
@@ -349,9 +362,12 @@ namespace UoFiddler.Forms
             SelectedColorLabel.TabIndex = 14;
             SelectedColorLabel.Text = "Tile Selection";
             toolTip1.SetToolTip(SelectedColorLabel, "ItemSize controls the size of images in items tab");
+
             // 
             // groupBox3
             // 
+            groupBox3.Controls.Add(label11);
+            groupBox3.Controls.Add(map6Nametext);
             groupBox3.Controls.Add(label9);
             groupBox3.Controls.Add(map5Nametext);
             groupBox3.Controls.Add(label8);
@@ -377,6 +393,14 @@ namespace UoFiddler.Forms
             groupBox3.TabStop = false;
             groupBox3.Text = "Map";
             // 
+            // map6Nametext
+            // 
+            map6Nametext.Location = new System.Drawing.Point(89, 196);
+            map6Nametext.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            map6Nametext.Name = "map6Nametext";
+            map6Nametext.Size = new System.Drawing.Size(116, 23);
+            map6Nametext.TabIndex = 16;
+            // 
             // map5Nametext
             // 
             map5Nametext.Location = new System.Drawing.Point(89, 168);
@@ -387,7 +411,7 @@ namespace UoFiddler.Forms
             // 
             // argstext
             // 
-            argstext.Location = new System.Drawing.Point(89, 238);
+            argstext.Location = new System.Drawing.Point(89, 257);
             argstext.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             argstext.Name = "argstext";
             argstext.Size = new System.Drawing.Size(116, 23);
@@ -395,7 +419,7 @@ namespace UoFiddler.Forms
             // 
             // cmdtext
             // 
-            cmdtext.Location = new System.Drawing.Point(89, 208);
+            cmdtext.Location = new System.Drawing.Point(89, 227);
             cmdtext.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             cmdtext.Name = "cmdtext";
             cmdtext.Size = new System.Drawing.Size(116, 23);
@@ -614,6 +638,7 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.Label label11;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
@@ -628,6 +653,7 @@ namespace UoFiddler.Forms
         private System.Windows.Forms.TextBox map3Nametext;
         private System.Windows.Forms.TextBox map4Nametext;
         private System.Windows.Forms.TextBox map5Nametext;
+        private System.Windows.Forms.TextBox map6Nametext;
         private System.Windows.Forms.NumericUpDown numericUpDownItemSizeHeight;
         private System.Windows.Forms.NumericUpDown numericUpDownItemSizeWidth;
         private System.Windows.Forms.TextBox textBoxOutputPath;

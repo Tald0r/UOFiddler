@@ -107,7 +107,7 @@ namespace UoFiddler.Controls.Forms
             this.numericUpDown1.Location = new System.Drawing.Point(21, 15);
             this.numericUpDown1.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.numericUpDown1.Maximum = new decimal(new int[] {
-            7168,
+            10000,
             0,
             0,
             0});
