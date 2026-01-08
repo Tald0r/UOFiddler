@@ -26,12 +26,12 @@ namespace UoFiddler.Controls.Forms
             InitializeComponent();
             Icon = Options.GetFiddlerIcon();
             _workingMap = currentMap;
-            numericUpDownX1.Maximum = _workingMap.Width;
-            numericUpDownX2.Maximum = _workingMap.Width;
-            numericUpDownY1.Maximum = _workingMap.Height;
-            numericUpDownY2.Maximum = _workingMap.Height;
-            numericUpDownToX1.Maximum = _workingMap.Width;
-            numericUpDownToY1.Maximum = _workingMap.Height;
+            numericUpDownX1.Maximum = 10000;
+            numericUpDownX2.Maximum = 10000;
+            numericUpDownY1.Maximum = 10000;
+            numericUpDownY2.Maximum = 10000;
+            numericUpDownToX1.Maximum = 10000;
+            numericUpDownToY1.Maximum = 10000;
             Text = $"MapReplace ID:{_workingMap.FileIndex}";
             comboBoxMapID.BeginUpdate();
             comboBoxMapID.Items.Add(new RFeluccaOld());
@@ -553,12 +553,12 @@ namespace UoFiddler.Controls.Forms
 
         private class RTerMur : SupportedMaps
         {
-            public RTerMur() : base(5, Options.MapNames[5], 1280, 4096) { }
+            public RTerMur() : base(5, Options.MapNames[5], 10000, 4096) { }
         }
         
         private class RNithos : SupportedMaps
         {
-            public RNithos() : base(6, Options.MapNames[6], 10000, 4096) { }
+            public RNithos() : base(6, Options.MapNames[6], 10000, 5000) { } // 5000
         }
     }
 }
