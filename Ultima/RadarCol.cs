@@ -71,12 +71,12 @@ namespace Ultima
         {
             using (var tex = new StreamWriter(new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite), Encoding.GetEncoding(1252)))
             {
-                tex.WriteLine("ID;Color");
+                tex.WriteLine("ID,Color");
 
                 for (int i = 0; i < Colors.Length; ++i)
                 {
                     // Use standard decimal formatting
-                    tex.WriteLine($"{i};{(int)Colors[i]}");
+                    tex.WriteLine($"{i},{(int)Colors[i]}");
             
                     // old hex format
                     // tex.WriteLine("0x{0:X4};{1}", i, Colors[i]);
@@ -104,7 +104,7 @@ namespace Ultima
                         continue;
                     }
 
-                    if (line.StartsWith("ID;"))
+                    if (line.StartsWith("ID;") || line.StartsWith("ID,"))
                     {
                         continue;
                     }
@@ -126,14 +126,14 @@ namespace Ultima
                         continue;
                     }
 
-                    if (line.StartsWith("ID;"))
+                    if (line.StartsWith("ID;") || line.StartsWith("ID,"))
                     {
                         continue;
                     }
 
                     try
                     {
-                        string[] split = line.Split(';');
+                        string[] split = line.Split(';', ',');
                         if (split.Length < 2)
                         {
                             continue;
