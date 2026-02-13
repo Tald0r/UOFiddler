@@ -553,7 +553,7 @@ namespace UoFiddler.Controls.Forms
 
         private class RTerMur : SupportedMaps
         {
-            public RTerMur() : base(5, Options.MapNames[5], 10000, 4096) { }
+            public RTerMur() : base(5, Options.MapNames[5], 10000, 5000) { }
         }
         
         private class RNithos : SupportedMaps

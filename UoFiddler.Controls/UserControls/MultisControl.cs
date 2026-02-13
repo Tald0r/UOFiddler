@@ -371,7 +371,7 @@ namespace UoFiddler.Controls.UserControls
                 ? $"_Z{HeightChangeMulti.Value:000}"
                 : string.Empty;
 
-            string fileName = Path.Combine(Options.OutputPath, $"Multi 0x{int.Parse(TreeViewMulti.SelectedNode.Name):X4}{floorSuffix}.{fileExtension}");
+            string fileName = Path.Combine(Options.OutputPath, $"Multi {int.Parse(TreeViewMulti.SelectedNode.Name):D5}{floorSuffix}.{fileExtension}");
 
             int selectedMaxHeight = HeightChangeMulti.Maximum - HeightChangeMulti.Value;
 
